@@ -1,7 +1,8 @@
+from todolist_api.models import Printable
 from app import db
 
 
-class TaskModel(db.Model):
+class TaskModel(db.Model, Printable):
     task_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(40))
     description = db.Column(db.Text)
