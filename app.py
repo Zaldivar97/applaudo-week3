@@ -1,23 +1,11 @@
-import os
+import flask_restful as rest
 
-from flask import Flask
-from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
+from todoListApi import app
+from todoListApi.resources.todolist import TodoList
 
-from todolist_api.resources.todolist import TodoList
-from config import mode
+api = rest.Api(app)
 
-db = SQLAlchemy()
-
-app = Flask(__name__)
-
-api = Api(app)
-
-api.add_resource(TodoList, '/todolist/<int(min=1):todo_list_id>')
+api.add_resource(TodoList, '/todolists/<int(min=1):todo_list_id>')
 
 if __name__ == '__main__':
-    #env_mode = os.getenv('ENVIRONMENT','test')
-    app.config.from_object(mode['dev'])
-    db.init_app(app)
     app.run()
-    

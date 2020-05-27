@@ -1,5 +1,5 @@
-from todolist_api.models import Printable
-from app import db
+from todoListApi.models import Printable
+from todoListApi import db
 
 
 class TaskModel(db.Model, Printable):
