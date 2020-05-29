@@ -1,3 +1,5 @@
+import os
+
 from todoListApi.models import OutputEncoder
 
 
@@ -9,7 +11,10 @@ class _Config():
 class _DevelopmentConfig(_Config):
     RESTFUL_JSON = {'cls': OutputEncoder}
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://applaudo:123@localhost:5433/week3'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'postgresql+psycopg2://applaudo:123@localhost:5433/week3'
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PORT = 8080
 
