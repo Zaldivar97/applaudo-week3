@@ -2,7 +2,6 @@ import os
 
 import flask
 import flask_sqlalchemy as sql
-
 from config import mode
 
 db = sql.SQLAlchemy()
