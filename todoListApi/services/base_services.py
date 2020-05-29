@@ -17,21 +17,39 @@ def save_entity(entity):
 class TodoListService():
     @staticmethod
     def find_by_name(todo_list_name):
-        return TodoListModel.query.filter_by(name=todo_list_name).first()
+        todo_list = TodoListModel.query.filter_by(name=todo_list_name).first()
+        if not todo_list:
+            raise ResourceDoesNotExist(
+                'To-do list with the given name does not exist'
+            )
+        return todo_list
+
+    @staticmethod
+    def update(data, todo_list_name):
+        todo_list = TodoListModel.query.filter_by(name=todo_list_name).first()
+        if not todo_list:
+            raise ResourceDoesNotExist(
+                'To-do list with the given name does not exist'
+            )
+        todo_list.name = data['name']
+        save_entity(todo_list)
+        return todo_list
 
     @staticmethod
     def save(todolist: TodoListModel):
         #update and insert
-        db.session.add(todolist)
-        db.session.commit()
-        db.session.refresh(todolist)
+        save_entity(todolist)
         return todolist
 
     @staticmethod
-    def remove(todolist: TodoListModel):
-        db.session.delete(todolist)
-        db.session.commit()
-        return todolist
+    def remove(todo_list_name):
+        todo_list_to_delete = TodoListService.find_by_name(todo_list_name)
+        if not todo_list_to_delete:
+            raise ResourceDoesNotExist(
+                'To-do list with the given name does not exist'
+            )
+        delete(todo_list_to_delete)
+        return todo_list_to_delete
 
 
 class TaskService():
@@ -67,8 +85,9 @@ class TaskService():
         description = data['description']
         task.title = title
         task.description = description
-        tags = TaskService.get_tags_by_name(data['tags'])
-        task.tags = TaskService.get_tags_by_name(data['tags']).all()
+        if data['tags']:
+            tags = TaskService.get_tags_by_name(data['tags']).all()
+            task.tags = tags
         save_entity(task)
         return task
 
@@ -79,8 +98,9 @@ class TaskService():
         if not todo_list:
             raise ResourceDoesNotExist('Parent to-do list does not exists')
         task.todo_list = todo_list
-        tag_list = TaskService.get_tags_by_name(tags)
-        task.tags = tag_list.all()
+        if tags:
+            tag_list = TaskService.get_tags_by_name(tags)
+            task.tags = tag_list.all()
         save_entity(task)
         return task
 
@@ -89,14 +109,7 @@ class TaskService():
         todo_list = TodoListService.find_by_name(todo_list_name)
         if not todo_list:
             raise ResourceDoesNotExist('Parent to-do list does not exists')
-        tasks = todo_list.tasks.all()
-        for task in tasks:
-            tags_transformed = []
-            for tag in task.tags:
-                if tag:
-                    tags_transformed.append(tag.serialize())
-            task.tag = tags_transformed
-        tasks = [task.serialize() for task in tasks]
+        tasks = todo_list.tasks
         return tasks
 
     @staticmethod
@@ -154,6 +167,6 @@ class TagService():
         tag = TagService.find_by_name(name)
         if not tag:
             raise ResourceDoesNotExist(
-            'Tag with the given name does not exist'
-        )
-        return tag.task
+                'Tag with the given name does not exist'
+            )
+        return tag.tasks

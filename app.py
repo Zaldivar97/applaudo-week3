@@ -1,11 +1,12 @@
 import flask_restful as rest
-
+from flask import make_response
 
 from todoListApi import app
 from todoListApi.resources.todolist import TodoList, TodoLists
 from todoListApi.resources.task import Task, Tasks
 from todoListApi.resources.tag import Tag, Tags, TagTask
-from todoListApi.resources.exceptions import ResourceDoesNotExist, BadRequest
+from todoListApi.resources.exceptions import ResourceDoesNotExist
+from todoListApi.models import OutputEncoder, json
 
 api = rest.Api(app)
 
@@ -36,14 +37,17 @@ api.add_resource(Tags,
                  )
 
 
+@api.representation('application/json')
+def output_json(data, code, headers=None):
+    resp = make_response(json.dumps(data, cls=OutputEncoder), code)
+    resp.headers.extend(headers or {})
+    return resp
+
+
 @app.errorhandler(ResourceDoesNotExist)
 def handler(exc):
     return {'message': exc.message}, 404
 
-
-'''@app.errorhandler(BadRequest)
-    def handler(exc):
-        return {'message': exc.message}, 400'''
 
 if __name__ == '__main__':
     app.run()

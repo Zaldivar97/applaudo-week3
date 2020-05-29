@@ -17,15 +17,18 @@ class TodoListModel(db.Model, Serializable):
 
     todo_list_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(20), unique=True)
-    #tasks = db.relationship('TaskModel', backref='todo_list')
+    
 
     def __init__(self, name: str, todo_list_id=None):
-        self.todo_list_id = todo_list_id
         self.name = name
-    
-    def __repr__(self):
-        print('[CALLED]--------------')
-        return str(self.serialize())
+
+    def repr_json(self):
+        return dict(
+            id=self.todo_list_id,
+            name=self.name,
+            tasks=getattr(self, 'tasks')
+        )
+
 
 class TagModel(db.Model, Serializable):
     __tablename__ = 'tag'
@@ -34,6 +37,12 @@ class TagModel(db.Model, Serializable):
 
     def __init__(self, name: str):
         self.name = name
+    
+    def repr_json(self):
+        return dict(
+            id=self.tag_id,
+            name=self.name
+        )
 
 
 class TaskModel(db.Model, Serializable):
@@ -49,12 +58,12 @@ class TaskModel(db.Model, Serializable):
                              )
     tags = db.relationship('TagModel', secondary=tags_association,
                            backref=db.backref(
-                               'task', lazy=True)
+                               'tasks', lazy=True)
                            )
     todo_list = db.relationship(
         'TodoListModel', backref=db.backref(
             'tasks',
-            lazy='dynamic',
+            lazy=True,
             cascade='all, delete')
     )
 
@@ -62,3 +71,11 @@ class TaskModel(db.Model, Serializable):
         self.title = title
         self.description = description
         #self.todo_list_id = todo_list_id
+
+    def repr_json(self):
+        return dict(
+            id=self.task_id,
+            title=self.title,
+            description=self.description,
+            tags=self.tags
+        )

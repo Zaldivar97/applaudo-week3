@@ -25,24 +25,22 @@ class Task(Resource):
 
     def get(self, todo_list_name, task_title):
         tasks = TaskService.find_task_like(todo_list_name, task_title)
-        tasks = [task.serialize() for task in tasks]
-        return make_response(jsonify(tasks=tasks), 200)
+        tasks = [task.repr_json() for task in tasks]
+        return {'tasks': tasks}, 200
 
     def put(self, todo_list_name, task_title):
-        
+
         data = Tasks.parser.parse_args()
-       
+
         updated_task = TaskService.update(
             data, todo_list_name, task_title
         )
-        tags = [tag.serialize() for tag in updated_task.tags]
-        response_body = updated_task.serialize()
-        response_body['tags'] = tags
-        return make_response(jsonify(response_body), 200)
+
+        return {'task': updated_task.repr_json()}, 200
 
     def delete(self, todo_list_name, task_title):
         deleted_task = TaskService.remove(todo_list_name, task_title)
-        return make_response(jsonify(deleted_task.serialize()), 200)
+        return {'task': deleted_task.repr_json()}, 200
 
 
 class Tasks(Resource):
@@ -66,14 +64,11 @@ class Tasks(Resource):
 
     def get(self, todo_list_name):
         tasks = TaskService.get_all(todo_list_name)
-        return make_response(jsonify(tasks=tasks), 200)
+        tasks = [task.repr_json() for task in tasks]
+        return {'tasks': tasks}, 200
 
     def post(self, todo_list_name):
-        
         data = Tasks.parser.parse_args()
         new_task = TaskModel(data['title'], data['description'])
         saved_task = TaskService.save(todo_list_name, new_task, data['tags'])
-        tags = [tag.serialize() for tag in saved_task.tags]
-        response_body = saved_task.serialize()
-        response_body['tags'] = tags
-        return make_response(jsonify(response_body), 201)
+        return {'saved_task': saved_task.repr_json()}, 201
