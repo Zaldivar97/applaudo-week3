@@ -106,3 +106,54 @@ class TaskService():
             raise ResourceDoesNotExist('Parent to-do list does not exists')
         deleted_task = delete(task)
         return task
+
+
+class TagService():
+
+    @staticmethod
+    def find_by_name(tag_name):
+        tag = TagModel.query.filter_by(name=tag_name).first()
+        if not tag:
+            raise ResourceDoesNotExist(
+                'Tag with the given name does not exist'
+            )
+        return tag
+
+    @staticmethod
+    def update(tag_name, new_tag_name):
+        tag = TagService.find_by_name(tag_name)
+        if not tag:
+            raise ResourceDoesNotExist(
+                'Tag with the given name does not exist'
+            )
+        tag.name = new_tag_name
+        save_entity(tag)
+        return tag
+
+    @staticmethod
+    def remove(tag_name):
+        tag = TagService.find_by_name(tag_name)
+        if not tag:
+            raise ResourceDoesNotExist(
+                'Tag with the given name does not exist'
+            )
+        delete(tag)
+        return tag
+
+    @staticmethod
+    def save(tag):
+        save_entity(tag)
+        return tag
+
+    @staticmethod
+    def get_all():
+        return TagModel.query.all()
+
+    @staticmethod
+    def get_tasks_by_tag_name(name):
+        tag = TagService.find_by_name(name)
+        if not tag:
+            raise ResourceDoesNotExist(
+            'Tag with the given name does not exist'
+        )
+        return tag.task
